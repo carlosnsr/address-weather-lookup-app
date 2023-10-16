@@ -16,6 +16,29 @@ module Weather
         raise WeatherApiError.new(JSON.parse(response.body).dig("detail"))
       end
     end
+
+    def get_forecast(latitude, longitude)
+      response = Faraday.get(get_forecast_url(latitude, longitude))
+      dailies = Array.new(7) { |_i| {} }
+
+      JSON.parse(response.body)
+        .dig("properties", "periods")
+        &.each_with_index do |p, i|
+          index = i / 2
+
+          dailies[index][:when] = p["name"].split(" ").first
+
+          key = i % 2 == 0 ? :high : :low
+          dailies[index][key] = {
+            value: "#{p["temperature"]}#{p["temperatureUnit"]}",
+            icon: p["icon"],
+          }
+        end
+
+      dailies[0][:when] = "Today"
+
+      dailies
+    end
   end
 
   class WeatherApiError < StandardError
