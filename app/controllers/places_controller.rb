@@ -5,6 +5,12 @@ class PlacesController < ApplicationController
 
   def show
     @place = Place.find(params[:id])
+
+    @dailies = Weather::Client.new.get_forecast(@place.latitude, @place.longitude)
+
+  rescue ActiveRecord::RecordNotFound => e
+    flash[:notice] = "No saved place with that ID"
+    redirect_to action: :index
   end
 
   def new

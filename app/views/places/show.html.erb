@@ -1,18 +1,41 @@
-<div class="card">
-  <div class="card-body">
-    <h5 class="card-title"><%= @place.address %></h5>
-    <div class="row">
-      <label class="col-sm-1">Address</label>
-      <span class="col-sm"><%= @place.address %></span>
-    </div>
-    <div class="row">
-      <label class="col-sm-1">Latitude</label>
-      <span class="col-sm"><%= @place.latitude %></span>
-    </div>
-    <div class="row">
-      <label class="col-sm-1">Longitude</label>
-      <span class="col-sm"><%= @place.longitude %></span>
-    </div>
+<h2 class="card-title"><%= @place.address %></h2>
+
+<%= link_to "Saved Addresses", places_path %>
+
+<hr />
+
+<div class="row">
+  <label class="col-sm-1">Address</label>
+  <span class="col-sm-2"><%= @place.address %></span>
+</div>
+<div class="row">
+  <label class="col-sm-1">Latitude</label>
+  <span class="col-sm-2"><%= @place.latitude %></span>
+</div>
+<div class="row">
+  <label class="col-sm-1">Longitude</label>
+  <span class="col-sm-2"><%= @place.longitude %></span>
 </div>
 
-<%= link_to "Places", places_path %>
+<div class="row">
+  <% @dailies.each do |daily| %>
+    <div class="card col-sm-3">
+      <div class="card-body">
+        <h5 class="card-title"><%= daily[:when] %></h5>
+
+        <div class="row">
+          <div class="col">
+            High: <%= daily[:high][:value] %>
+            <%= image_tag(daily[:high][:icon]) %>
+          </div>
+
+          <div class="col">
+            Low: <%= daily[:low][:value] %>
+            <%= image_tag(daily[:low][:icon]) %>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  <% end %>
+</div>
