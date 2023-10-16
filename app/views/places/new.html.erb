@@ -1,0 +1,17 @@
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Get Weather at New Address</h5>
+
+<%= form_with model: @place do |form| %>
+  <div class="row">
+    <%= form.label "Enter Address" %><br/>
+    <%= form.text_field :address %>
+    <% @place.errors.full_messages_for(:address).each do |message| %>
+      <%= message %>
+    <% end %>
+  </div>
+
+  <div class="row">
+    <%= form.submit "Get Weather" %><br/>
+  </div>
+<% end %>

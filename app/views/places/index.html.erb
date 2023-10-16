@@ -1,4 +1,10 @@
-<h1>Places</h1>
+<h1>Saved Addresses</h1>
+
+<div class="row">
+  <%= link_to "Look up weather at a new address", new_place_path %>
+</div>
+
+<hr/>
 
 <% @places.each do |place| %>
   <div class="row">
