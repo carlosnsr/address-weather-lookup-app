@@ -1,0 +1,15 @@
+<h1>Places</h1>
+
+<% @places.each do |place| %>
+  <div class="row">
+    <div class="col-sm-1">
+      <%= place.postal_code %>
+    </div>
+    <div class="col-sm-2">
+      <%= link_to place.address, place %>
+    </div>
+    <div class="col-sm">
+      (<%= place.latitude %>, <%= place.longitude %>)
+    </div>
+  </div>
+<% end %>

@@ -29,7 +29,8 @@ Generate an unrestricted API key for the server (will remain secret and be calle
 
     bundle
     rails db:create
-    rails server
+    rails db:seed
+    ./bin/dev
 
 - To Do
   - Installation
