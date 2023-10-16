@@ -1,0 +1,18 @@
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Place <%= @place.id %></h5>
+    <div class="row">
+      <label class="col-sm-1">Address</label>
+      <span class="col-sm"><%= @place.address %></span>
+    </div>
+    <div class="row">
+      <label class="col-sm-1">Latitude</label>
+      <span class="col-sm"><%= @place.latitude %></span>
+    </div>
+    <div class="row">
+      <label class="col-sm-1">Longitude</label>
+      <span class="col-sm"><%= @place.longitude %></span>
+    </div>
+</div>
+
+<%= link_to "Places", places_path %>
