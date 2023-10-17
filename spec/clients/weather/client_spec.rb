@@ -7,14 +7,14 @@ RSpec.describe Weather::Client do
 
   subject { Weather::Client.new() }
 
-  describe "#make_weather_url" do
+  describe "#make_geo_points_url" do
     it "generates the url from the latitude and longitude" do
-      expect(subject.make_weather_url(38, -77))
+      expect(subject.make_geo_points_url(38, -77))
         .to eq("https://api.weather.gov/points/38,-77")
     end
 
     it "truncates the latitude and longitude" do
-      expect(subject.make_weather_url(latitude, longitude))
+      expect(subject.make_geo_points_url(latitude, longitude))
         .to eq("https://api.weather.gov/points/38.8976,-77.0365")
     end
   end
