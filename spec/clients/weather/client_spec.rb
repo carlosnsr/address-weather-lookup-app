@@ -357,6 +357,101 @@ RSpec.describe Weather::Client do
           ]
         }}.to_json
     end
+    let(:expected_dailies) do
+        [
+          {
+            when: "Today",
+            temperatures: [
+              {
+                value: "61F",
+                icon: "https://api.weather.gov/icons/land/day/rain_showers,20?size=medium",
+              },
+              {
+                value: "48F",
+                icon: "https://api.weather.gov/icons/land/night/rain_showers,20/bkn?size=medium",
+              },
+            ],
+          },
+          {
+            when: "Tuesday",
+            temperatures: [
+              {
+                value: "65F",
+                icon: "https://api.weather.gov/icons/land/day/bkn?size=medium",
+              },
+              {
+                value: "47F",
+                icon: "https://api.weather.gov/icons/land/night/sct?size=medium",
+              },
+            ],
+          },
+          {
+            when: "Wednesday",
+            temperatures: [
+              {
+                value: "67F",
+                icon: "https://api.weather.gov/icons/land/day/sct?size=medium",
+              },
+              {
+                value: "49F",
+                icon: "https://api.weather.gov/icons/land/night/few?size=medium",
+              },
+            ],
+          },
+          {
+            when: "Thursday",
+            temperatures: [
+              {
+                value: "71F",
+                icon: "https://api.weather.gov/icons/land/day/sct?size=medium",
+              },
+              {
+                value: "56F",
+                icon: "https://api.weather.gov/icons/land/night/bkn/rain_showers?size=medium",
+              },
+            ],
+          },
+          {
+            when: "Friday",
+            temperatures: [
+              {
+                value: "70F",
+                icon: "https://api.weather.gov/icons/land/day/rain_showers,30/rain_showers,50?size=medium",
+              },
+              {
+                value: "54F",
+                icon: "https://api.weather.gov/icons/land/night/tsra,60?size=medium",
+              },
+            ],
+          },
+          {
+            when: "Saturday",
+            temperatures: [
+              {
+                value: "63F",
+                icon: "https://api.weather.gov/icons/land/day/rain_showers,60/rain_showers,40?size=medium",
+              },
+              {
+                value: "50F",
+                icon: "https://api.weather.gov/icons/land/night/rain_showers,40/rain_showers?size=medium",
+              },
+            ],
+          },
+          {
+            when: "Sunday",
+            temperatures: [
+              {
+                value: "61F",
+                icon: "https://api.weather.gov/icons/land/day/rain_showers/sct?size=medium",
+              },
+              {
+                value: "45F",
+                icon: "https://api.weather.gov/icons/land/night/few?size=medium",
+              },
+            ],
+          },
+        ]
+    end
 
     before(:each) do
       allow(subject).to receive(:get_forecast_url).and_return(forecast_url)
@@ -371,85 +466,170 @@ RSpec.describe Weather::Client do
 
     it "returns the daily highs and lows" do
       expect(subject.get_forecast(latitude, longitude))
-        .to eq([
+        .to eq(expected_dailies)
+    end
+  end
+
+  describe "#decode_forecast" do
+    let(:tuesday) do
+      {
+        "number"=>3,
+        "name"=>"Tuesday",
+        "startTime"=>"2023-10-17T06:00:00-04:00",
+        "endTime"=>"2023-10-17T18:00:00-04:00",
+        "isDaytime"=>true,
+        "temperature"=>65,
+        "temperatureUnit"=>"F",
+        "temperatureTrend"=>nil,
+        "probabilityOfPrecipitation"=>{"unitCode"=>"wmoUnit:percent", "value"=>nil},
+        "dewpoint"=>{"unitCode"=>"wmoUnit:degC", "value"=>9.444444444444445},
+        "relativeHumidity"=>{"unitCode"=>"wmoUnit:percent", "value"=>100},
+        "windSpeed"=>"8 mph",
+        "windDirection"=>"NW",
+        "icon"=>"https://api.weather.gov/icons/land/day/bkn?size=medium",
+        "shortForecast"=>"Partly Sunny",
+        "detailedForecast"=>"Partly sunny, with a high near 65. Northwest wind around 8 mph."
+      }
+    end
+    let(:tuesday_night) do
+      {
+        "number"=>4,
+        "name"=>"Tuesday Night",
+        "startTime"=>"2023-10-17T18:00:00-04:00",
+        "endTime"=>"2023-10-18T06:00:00-04:00",
+        "isDaytime"=>false,
+        "temperature"=>47,
+        "temperatureUnit"=>"F",
+        "temperatureTrend"=>nil,
+        "probabilityOfPrecipitation"=>{"unitCode"=>"wmoUnit:percent", "value"=>nil},
+        "dewpoint"=>{"unitCode"=>"wmoUnit:degC", "value"=>9.444444444444445},
+        "relativeHumidity"=>{"unitCode"=>"wmoUnit:percent", "value"=>93},
+        "windSpeed"=>"2 to 6 mph",
+        "windDirection"=>"NW",
+        "icon"=>"https://api.weather.gov/icons/land/night/sct?size=medium",
+        "shortForecast"=>"Partly Cloudy",
+        "detailedForecast"=>"Partly cloudy, with a low around 47. Northwest wind 2 to 6 mph."
+      }
+    end
+    let(:expected_tuesday) do
+      {
+        when: "Tuesday",
+        temperatures: [
+          {
+            value: "65F",
+            icon: "https://api.weather.gov/icons/land/day/bkn?size=medium",
+          },
+          {
+            value: "47F",
+            icon: "https://api.weather.gov/icons/land/night/sct?size=medium",
+          },
+        ],
+      }
+    end
+
+    context "if two 12-hour periods for today" do
+      let(:periods) do
+        [
+          {
+            "number"=>1,
+            "name"=>"This Afternoon",
+            "startTime"=>"2023-10-16T12:00:00-04:00",
+            "endTime"=>"2023-10-16T18:00:00-04:00",
+            "isDaytime"=>true,
+            "temperature"=>61,
+            "temperatureUnit"=>"F",
+            "temperatureTrend"=>nil,
+            "probabilityOfPrecipitation"=>{"unitCode"=>"wmoUnit:percent", "value"=>20},
+            "dewpoint"=>{"unitCode"=>"wmoUnit:degC", "value"=>8.88888888888889},
+            "relativeHumidity"=>{"unitCode"=>"wmoUnit:percent", "value"=>62},
+            "windSpeed"=>"10 mph",
+            "windDirection"=>"NW",
+            "icon"=>"https://api.weather.gov/icons/land/day/rain_showers,20?size=medium",
+            "shortForecast"=>"Isolated Rain Showers",
+            "detailedForecast"=>
+            "Isolated rain showers after 5pm. Mostly cloudy, with a high near 61. Northwest wind around 10 mph. Chance of precipitation is 20%."
+          },
+          {
+            "number"=>2,
+            "name"=>"Tonight",
+            "startTime"=>"2023-10-16T18:00:00-04:00",
+            "endTime"=>"2023-10-17T06:00:00-04:00",
+            "isDaytime"=>false,
+            "temperature"=>48,
+            "temperatureUnit"=>"F",
+            "temperatureTrend"=>nil,
+            "probabilityOfPrecipitation"=>{"unitCode"=>"wmoUnit:percent", "value"=>20},
+            "dewpoint"=>{"unitCode"=>"wmoUnit:degC", "value"=>10},
+            "relativeHumidity"=>{"unitCode"=>"wmoUnit:percent", "value"=>96},
+            "windSpeed"=>"8 mph",
+            "windDirection"=>"NW",
+            "icon"=>"https://api.weather.gov/icons/land/night/rain_showers,20/bkn?size=medium",
+            "shortForecast"=>"Isolated Rain Showers then Mostly Cloudy",
+            "detailedForecast"=>
+            "Isolated rain showers before 8pm. Mostly cloudy, with a low around 48. Northwest wind around 8 mph. Chance of precipitation is 20%."
+          },
+        ].concat([tuesday, tuesday_night])
+      end
+
+      it "returns a high and low for today, and each day" do
+        expect(subject.decode_forecast(periods)).to eq([
           {
             when: "Today",
-            high: {
-              value: "61F",
-              icon: "https://api.weather.gov/icons/land/day/rain_showers,20?size=medium",
-            },
-            low: {
-              value: "48F",
-              icon: "https://api.weather.gov/icons/land/night/rain_showers,20/bkn?size=medium",
-            },
+            temperatures: [
+              {
+                value: "61F",
+                icon: "https://api.weather.gov/icons/land/day/rain_showers,20?size=medium",
+              },
+              {
+                value: "48F",
+                icon: "https://api.weather.gov/icons/land/night/rain_showers,20/bkn?size=medium",
+              },
+            ],
           },
-          {
-            when: "Tuesday",
-            high: {
-              value: "65F",
-              icon: "https://api.weather.gov/icons/land/day/bkn?size=medium",
-            },
-            low: {
-              value: "47F",
-              icon: "https://api.weather.gov/icons/land/night/sct?size=medium",
-            },
-          },
-          {
-            when: "Wednesday",
-            high: {
-              value: "67F",
-              icon: "https://api.weather.gov/icons/land/day/sct?size=medium",
-            },
-            low: {
-              value: "49F",
-              icon: "https://api.weather.gov/icons/land/night/few?size=medium",
-            },
-          },
-          {
-            when: "Thursday",
-            high: {
-              value: "71F",
-              icon: "https://api.weather.gov/icons/land/day/sct?size=medium",
-            },
-            low: {
-              value: "56F",
-              icon: "https://api.weather.gov/icons/land/night/bkn/rain_showers?size=medium",
-            },
-          },
-          {
-            when: "Friday",
-            high: {
-              value: "70F",
-              icon: "https://api.weather.gov/icons/land/day/rain_showers,30/rain_showers,50?size=medium",
-            },
-            low: {
-              value: "54F",
-              icon: "https://api.weather.gov/icons/land/night/tsra,60?size=medium",
-            },
-          },
-          {
-            when: "Saturday",
-            high: {
-              value: "63F",
-              icon: "https://api.weather.gov/icons/land/day/rain_showers,60/rain_showers,40?size=medium",
-            },
-            low: {
-              value: "50F",
-              icon: "https://api.weather.gov/icons/land/night/rain_showers,40/rain_showers?size=medium",
-            },
-          },
-          {
-            when: "Sunday",
-            high: {
-              value: "61F",
-              icon: "https://api.weather.gov/icons/land/day/rain_showers/sct?size=medium",
-            },
-            low: {
-              value: "45F",
-              icon: "https://api.weather.gov/icons/land/night/few?size=medium",
-            },
-          },
+          expected_tuesday,
         ])
+      end
+    end
+
+    context "if one 12-hour periods for today" do
+      let(:periods) do
+        [
+          {
+            "number"=>1,
+            "name"=>"Tonight",
+            "startTime"=>"2023-10-16T18:00:00-04:00",
+            "endTime"=>"2023-10-17T06:00:00-04:00",
+            "isDaytime"=>false,
+            "temperature"=>48,
+            "temperatureUnit"=>"F",
+            "temperatureTrend"=>nil,
+            "probabilityOfPrecipitation"=>{"unitCode"=>"wmoUnit:percent", "value"=>20},
+            "dewpoint"=>{"unitCode"=>"wmoUnit:degC", "value"=>10},
+            "relativeHumidity"=>{"unitCode"=>"wmoUnit:percent", "value"=>96},
+            "windSpeed"=>"8 mph",
+            "windDirection"=>"NW",
+            "icon"=>"https://api.weather.gov/icons/land/night/rain_showers,20/bkn?size=medium",
+            "shortForecast"=>"Isolated Rain Showers then Mostly Cloudy",
+            "detailedForecast"=>
+            "Isolated rain showers before 8pm. Mostly cloudy, with a low around 48. Northwest wind around 8 mph. Chance of precipitation is 20%."
+          },
+        ].concat([tuesday, tuesday_night])
+      end
+
+      it "returns a high for today, and high and low for each day" do
+        expect(subject.decode_forecast(periods)).to eq([
+          {
+            when: "Today",
+            temperatures: [
+              {
+                value: "48F",
+                icon: "https://api.weather.gov/icons/land/night/rain_showers,20/bkn?size=medium",
+              },
+            ],
+          },
+          expected_tuesday,
+        ])
+      end
     end
   end
 end

@@ -19,25 +19,42 @@ module Weather
 
     def get_forecast(latitude, longitude)
       response = Faraday.get(get_forecast_url(latitude, longitude))
-      dailies = Array.new(7) { |_i| {} }
 
-      JSON.parse(response.body)
-        .dig("properties", "periods")
-        &.each_with_index do |p, i|
-          index = i / 2
+      periods = JSON.parse(response.body).dig("properties", "periods")
+      decode_forecast(periods) if periods.present?
+    end
 
-          dailies[index][:when] = p["name"].split(" ").first
+    def decode_forecast(periods)
+      periods.map do |p|
+        temp = {}
 
-          key = i % 2 == 0 ? :high : :low
-          dailies[index][key] = {
-            value: "#{p["temperature"]}#{p["temperatureUnit"]}",
-            icon: p["icon"],
+        temp[:when] = p["name"]
+
+        temp[:temp] = {
+          value: "#{p["temperature"]}#{p["temperatureUnit"]}",
+          icon: p["icon"],
+        }
+
+        temp
+      end.inject([]) do |acc, temp|
+        if temp[:when] =~ /^\w+day$/
+          acc << {
+            when: temp[:when],
+            temperatures: [temp[:temp]],
           }
+        elsif temp[:when] =~ /^\w+day Night$/
+          acc.last[:temperatures] << temp[:temp]
+        elsif acc.empty?
+          acc << {
+            when: "Today",
+            temperatures: [temp[:temp]],
+          }
+        else
+          acc.last[:temperatures] << temp[:temp]
         end
 
-      dailies[0][:when] = "Today"
-
-      dailies
+        acc
+      end
     end
   end
 
