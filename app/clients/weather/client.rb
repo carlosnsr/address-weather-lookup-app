@@ -27,33 +27,30 @@ module Weather
       decode_forecast(periods) if periods.present?
     end
 
+    # The weather data comes in 12-hour periods for each day (or remainder of today).
+    # This function pairs the relevant temperatures to each day.
     def decode_forecast(periods)
-      periods.map do |p|
-        temp = {}
-
-        temp[:when] = p["name"]
-
-        temp[:temp] = {
-          value: "#{p["temperature"]}#{p["temperatureUnit"]}",
-          icon: p["icon"],
+      periods.inject([]) do |acc, period|
+        name = period["name"]
+        temperature = {
+          value: "#{period["temperature"]}#{period["temperatureUnit"]}",
+          icon: period["icon"],
         }
 
-        temp
-      end.inject([]) do |acc, temp|
-        if temp[:when] =~ /^\w+day$/
+        if name =~ /^\w+day$/
           acc << {
-            when: temp[:when],
-            temperatures: [temp[:temp]],
+            when: name,
+            temperatures: [temperature],
           }
-        elsif temp[:when] =~ /^\w+day Night$/
-          acc.last[:temperatures] << temp[:temp]
+        elsif name =~ /^\w+day Night$/
+          acc.last[:temperatures] << temperature
         elsif acc.empty?
           acc << {
             when: "Today",
-            temperatures: [temp[:temp]],
+            temperatures: [temperature],
           }
         else
-          acc.last[:temperatures] << temp[:temp]
+          acc.last[:temperatures] << temperature
         end
 
         acc
