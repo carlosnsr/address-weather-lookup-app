@@ -7,23 +7,32 @@ Thank you for setting an interesting assessment.
 I submit this version (after having scrapped several others) because it is simpler to evaluate and fulfills the requested requirements.
 If I was to continue this project, I would want to make the changes listed in the below roadmap.
 
-The API keys were separately submitted to the recruiter.  Just in case, I will retire the API keys in 14 days.
+For your convenience, the API keys that I used were separately submitted to the recruiter.
+I will retire these API keys in 14 days.
 
 ### Roadmap
 
-- use jobs to handle the querying of external APIs (e.g. Geocoder and Weather)
-    - as it is currently implemented, I'm assuming no/little lag and 100% up-time.  These won't always be true and should be handled in a production-ready app.
+- use asynchronous (background) jobs to handle the querying of external APIs (e.g. Geocoder and Weather)
+    - as it is currently implemented, I'm assuming no/little lag and 100% up-time. These won't always be true.
+    - a job could retry the query (with limited retries and exponential back-off) if it happened to fail
+    - the database and front-end can then be updated when the job completes
 - use a separate React front-end to consume the API
     - smoother transitions between the Saved Addresses page and the page entering a new address
     - show a loading circle while the Geocoder/Weather jobs are fetching their respective payloads
     - update the page with Geocoder/Weather info once the jobs have completed
     - integrate with an address validator/autocomplete to give user address suggestions as they type
     - display a map showing the selected address
-- set up a separate cache storage (most likely Redis)
+- set up a separate cache storage (e.g. Redis)
     - the default Rails cache storage is `:memory_store` which is not persistent and disappears once the server is killed
     - a separate cache storage could also be shared across multiple server instances
+- use a different API for getting the weather at the given address
+    - currently, we're using an API provided by the [National Weather Service](https://www.weather.gov/documentation/services-web-api)
+    - the forecast is always 14 12-hour segments, so one gets odd edge cases when querying it at the very end of the day
+      (e.g. The current day only having the night-time temperature, and there being the morning temperature for an 8th day)
 - better error-handling
     - handling what happens if the Geocoder/Weather API errors or is unavailable
+    - better handling what `postal_code` gets saved against the address when Geocoder cannot determine a postal/zip code.
+      Thus preventing cache-hits returning an irrelevant result.
 - more testing
     - request tests
     - view tests
