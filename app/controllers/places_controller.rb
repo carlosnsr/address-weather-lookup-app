@@ -9,7 +9,7 @@ class PlacesController < ApplicationController
     @cached = true
     @dailies = Rails.cache.fetch(@place.postal_code, expires_in: 30.minutes) do
       @cached = false
-      Weather::Client.new.get_forecast(@place.latitude, @place.longitude)
+      Weather::Client.get_forecast(@place.latitude, @place.longitude)
     end
 
   rescue ActiveRecord::RecordNotFound => e

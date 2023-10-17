@@ -5,9 +5,9 @@ RSpec.describe Weather::Client do
   let(:longitude) { -77.0365739 }
   let(:forecast_url) { "https://api.weather.gov/gridpoints/LWX/97,71/forecast" }
 
-  subject { Weather::Client.new() }
-
   describe "#make_geo_points_url" do
+    subject { Weather::Client }
+
     it "generates the url from the latitude and longitude" do
       expect(subject.make_geo_points_url(38, -77))
         .to eq("https://api.weather.gov/points/38,-77")
@@ -20,6 +20,8 @@ RSpec.describe Weather::Client do
   end
 
   describe "#get_forecast_url" do
+    subject { Weather::Client.get_forecast_url(latitude, longitude) }
+
     let(:points_json) do
       {
         "properties"=> {
@@ -38,12 +40,12 @@ RSpec.describe Weather::Client do
       end
 
       it "calls the weather API" do
-        subject.get_forecast_url(latitude, longitude)
+        subject
         expect(a_request(:get, /api\.weather\.gov\/points/)).to have_been_made.once
       end
 
       it "returns the forecast url" do
-        expect(subject.get_forecast_url(latitude, longitude)).to eq(forecast_url)
+        expect(subject).to eq(forecast_url)
       end
     end
 
@@ -56,13 +58,15 @@ RSpec.describe Weather::Client do
       end
 
       it "throws an exception" do
-        expect{ subject.get_forecast_url(latitude, longitude) }
+        expect{ subject }
           .to raise_error(Weather::WeatherApiError)
       end
     end
   end
 
   describe "#get_forecast" do
+    subject { Weather::Client.get_forecast(latitude, longitude) }
+
     let(:forecast_json) do
       {
         "@context"=> [
@@ -454,23 +458,24 @@ RSpec.describe Weather::Client do
     end
 
     before(:each) do
-      allow(subject).to receive(:get_forecast_url).and_return(forecast_url)
+      allow(Weather::Client).to receive(:get_forecast_url).and_return(forecast_url)
       stub_request(:get, forecast_url)
         .to_return(status: 200, body: forecast_json, headers: {})
     end
 
     it "calls the forecast API" do
-      subject.get_forecast(latitude, longitude)
+      subject
       expect(a_request(:get, forecast_url)).to have_been_made.once
     end
 
     it "returns the daily highs and lows" do
-      expect(subject.get_forecast(latitude, longitude))
-        .to eq(expected_dailies)
+      expect(subject).to eq(expected_dailies)
     end
   end
 
   describe "#decode_forecast" do
+    subject { Weather::Client.decode_forecast(periods) }
+
     let(:tuesday) do
       {
         "number"=>3,
@@ -572,7 +577,7 @@ RSpec.describe Weather::Client do
       end
 
       it "returns a high and low for today, and each day" do
-        expect(subject.decode_forecast(periods)).to eq([
+        expect(subject).to eq([
           {
             when: "Today",
             temperatures: [
@@ -617,7 +622,7 @@ RSpec.describe Weather::Client do
       end
 
       it "returns a high for today, and high and low for each day" do
-        expect(subject.decode_forecast(periods)).to eq([
+        expect(subject).to eq([
           {
             when: "Today",
             temperatures: [
