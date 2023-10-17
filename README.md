@@ -25,19 +25,20 @@ Generate an unrestricted API key for the server (will remain secret and be calle
 - An API key for Google Maps Platform (see [Geocoder and Google Maps API](#geocoder-and-google-maps-api))
 - An environment file with the above API key (see [Save the API Keys](save-the-api-keys))
 
-### To Install and Run
+### To Install and Run in Development
 
     bundle
     rails db:create
     rails db:seed
+    # Toggle on the dev cache
+    ./bin/rails dev:cache
     ./bin/dev
 
+## Testing
+
+    rspec
+
 - To Do
-  - Installation
-      - Database creation
-      - Database initialization
-      - Configuration
-  - Testing
   - Usage
   - Deployment
   - Services (job queues, cache servers, search engines, etc.)

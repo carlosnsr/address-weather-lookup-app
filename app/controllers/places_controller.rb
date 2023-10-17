@@ -6,7 +6,11 @@ class PlacesController < ApplicationController
   def show
     @place = Place.find(params[:id])
 
-    @dailies = Weather::Client.new.get_forecast(@place.latitude, @place.longitude)
+    @cached = true
+    @dailies = Rails.cache.fetch(@place.postal_code, expires_in: 30.minutes) do
+      @cached = false
+      Weather::Client.new.get_forecast(@place.latitude, @place.longitude)
+    end
 
   rescue ActiveRecord::RecordNotFound => e
     flash[:notice] = "No saved place with that ID"
