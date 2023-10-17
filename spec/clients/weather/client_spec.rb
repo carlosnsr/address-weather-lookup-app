@@ -516,6 +516,26 @@ RSpec.describe Weather::Client do
         "detailedForecast"=>"Partly cloudy, with a low around 47. Northwest wind 2 to 6 mph."
       }
     end
+    let(:wednesday) do
+      {
+        "number"=>5,
+        "name"=>"Wednesday",
+        "startTime"=>"2023-10-18T06:00:00-04:00",
+        "endTime"=>"2023-10-18T18:00:00-04:00",
+        "isDaytime"=>true,
+        "temperature"=>67,
+        "temperatureUnit"=>"F",
+        "temperatureTrend"=>nil,
+        "probabilityOfPrecipitation"=>{"unitCode"=>"wmoUnit:percent", "value"=>nil},
+        "dewpoint"=>{"unitCode"=>"wmoUnit:degC", "value"=>8.88888888888889},
+        "relativeHumidity"=>{"unitCode"=>"wmoUnit:percent", "value"=>100},
+        "windSpeed"=>"2 to 6 mph",
+        "windDirection"=>"W",
+        "icon"=>"https://api.weather.gov/icons/land/day/sct?size=medium",
+        "shortForecast"=>"Mostly Sunny",
+        "detailedForecast"=>"Mostly sunny, with a high near 67. West wind 2 to 6 mph."
+      }
+    end
     let(:expected_tuesday) do
       {
         when: "Tuesday",
@@ -576,7 +596,7 @@ RSpec.describe Weather::Client do
         ].concat([tuesday, tuesday_night])
       end
 
-      it "returns a high and low for today, and each day" do
+      it "returns temperatures for today, and each day" do
         expect(subject).to eq([
           {
             when: "Today",
@@ -596,7 +616,7 @@ RSpec.describe Weather::Client do
       end
     end
 
-    context "if one 12-hour periods for today" do
+    context "if one 12-hour period for today, and one for the last day" do
       let(:periods) do
         [
           {
@@ -618,22 +638,26 @@ RSpec.describe Weather::Client do
             "detailedForecast"=>
             "Isolated rain showers before 8pm. Mostly cloudy, with a low around 48. Northwest wind around 8 mph. Chance of precipitation is 20%."
           },
-        ].concat([tuesday, tuesday_night])
+        ].concat([tuesday, tuesday_night, wednesday])
+      end
+      let(:expected_today) do
+        {
+          when: "Today",
+          temperatures: [
+            {
+              value: "48F",
+              icon: "https://api.weather.gov/icons/land/night/rain_showers,20/bkn?size=medium",
+            },
+          ],
+        }
       end
 
-      it "returns a high for today, and high and low for each day" do
-        expect(subject).to eq([
-          {
-            when: "Today",
-            temperatures: [
-              {
-                value: "48F",
-                icon: "https://api.weather.gov/icons/land/night/rain_showers,20/bkn?size=medium",
-              },
-            ],
-          },
-          expected_tuesday,
-        ])
+      it "returns a temperature for today" do
+        expect(subject.first).to eq(expected_today)
+      end
+
+      it "returns temperatures for each day except the last" do
+        expect(subject).to eq([expected_today, expected_tuesday])
       end
     end
   end

@@ -10,7 +10,6 @@
 addresses = [
   'Statue of Liberty',
   'White House',
-  'Grand Canyon',
 ]
 
 puts "Clearing seeds..."

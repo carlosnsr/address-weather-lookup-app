@@ -30,7 +30,7 @@ module Weather
     # The weather data comes in 12-hour periods for each day (or remainder of today).
     # This function pairs the relevant temperatures to each day.
     def self.decode_forecast(periods)
-      periods.inject([]) do |acc, period|
+      dailies = periods.inject([]) do |acc, period|
         name = period["name"]
         temperature = {
           value: "#{period["temperature"]}#{period["temperatureUnit"]}",
@@ -55,6 +55,13 @@ module Weather
 
         acc
       end
+
+      # At the end of the day, the last 12-hour period extends into the 8th day.  Drop this.
+      if dailies.last.dig(:temperatures)&.size == 1
+        dailies.pop
+      end
+
+      dailies
     end
   end
 
